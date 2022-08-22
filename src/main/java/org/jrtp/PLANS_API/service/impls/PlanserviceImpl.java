@@ -1,5 +1,6 @@
  package org.jrtp.PLANS_API.service.impls;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,28 +22,28 @@ public class PlanserviceImpl implements PlanService{
 	@Autowired
 	private PlanCategoryRepo planCategoryRepo;
 
-	/**
-	 *
-	 */
 	@Override
 	public Map<Integer, String> getPlanCategories() {
-		List<PlanCatagory> findAll = planCategoryRepo.findAll();
-		
-		
-		
+		List<PlanCatagory> catagoryList = planCategoryRepo.findAll();
+		if(!(catagoryList.isEmpty())) {
+			Map<Integer, String> map = new HashMap<>();
+			catagoryList.forEach((PlanCatagory p) -> {
+				map.put(p.getCategoryId(), p.getCategoryName());
+			});
+			return map;
+		}
 		return null;
 	}
 
 	@Override
 	public boolean savePlan(Plan plan) {
-		// TODO Auto-generated method stub
-		return false;
+		Plan saved = planRepo.save(plan);
+		return saved.getPlanId() != null;
 	}
 
 	@Override
 	public List<Plan> getAllPlans() {
-		// TODO Auto-generated method stub
-		return null;
+		return planRepo.findAll();
 	}
 
 	@Override
@@ -53,20 +54,31 @@ public class PlanserviceImpl implements PlanService{
 
 	@Override
 	public boolean updatePlan(Plan plan) {
-		// TODO Auto-generated method stub
-		return false;
+		Plan saved = planRepo.save(plan);
+		return saved.getPlanId() != null;
 	}
 
 	@Override
 	public boolean deletePlanByid(Integer planId) {
-		// TODO Auto-generated method stub
-		return false;
+		boolean status = false;
+		try {
+			planRepo.deleteById(planId);
+			status = true;
+		} catch (Exception e) {
+			e.fillInStackTrace();
+		}
+		return status;
 	}
 
 	@Override
 	public boolean planStatusChange(Integer planId, String active_sw) {
-		// TODO Auto-generated method stub
+		Optional<Plan> findById = planRepo.findById(planId);
+		if (findById.isPresent()) {
+			Plan plan = findById.get();
+			plan.setActiveSw(active_sw);
+			planRepo.save(plan);
+			return true;
+		}
 		return false;
 	}
-
 }
